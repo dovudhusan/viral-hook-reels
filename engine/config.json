@@ -1,0 +1,11 @@
+{
+  "cta": {
+    "keyword": "hooks",
+    "offer": "my viral hook breakdowns, with links to the original videos."
+  },
+  "voiceId": "TX3LPaxmHKxFdv7VOQHJ",
+  "model": "claude-fable-5-2",
+  "outputDir": "~/Movies/Hook Reels",
+  "creditSource": true,
+  "claudeVia": "subscription"
+}

@@ -1,0 +1,31 @@
+{
+  "name": "hook-reels",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "hook-reels": "tsx src/cli.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.8.0",
+    "@remotion/bundler": "^4.0.542",
+    "@remotion/cli": "^4.0.542",
+    "@remotion/google-fonts": "^4.0.542",
+    "@remotion/renderer": "^4.0.542",
+    "commander": "^15.1.0",
+    "dotenv": "^18.0.10",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "remotion": "^4.0.542",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  }
+}

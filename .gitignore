@@ -1,0 +1,6 @@
+node_modules
+.env
+.DS_Store
+engine/jobs/
+engine/data/
+engine/dist/
