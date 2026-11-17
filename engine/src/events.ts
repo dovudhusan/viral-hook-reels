@@ -9,6 +9,8 @@ export type EngineEvent =
   | { event: 'job'; jobId: string; url: string }
   | { event: 'stage'; stage: StageName; state: 'started' | 'finished' }
   | { event: 'failed'; stage: StageName; reason: string }
+  /** A prepared job is waiting for its script: the brief to read and the folder of frames. */
+  | { event: 'brief'; jobId: string; brief: string; frames: string }
   | { event: 'done'; jobId: string; file: string; caption: string; title: string };
 export type Emit = (e: EngineEvent) => void;
 

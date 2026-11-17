@@ -15,7 +15,6 @@ need() { command -v "$1" >/dev/null 2>&1 || { echo "PROBLEM: $1 is not installed
 need node "Install Node 22 or later (macOS: brew install node)."
 need ffmpeg "macOS: brew install ffmpeg"
 need yt-dlp "macOS: brew install yt-dlp"
-need claude "Install Claude Code; the script is written through its command line (or set claudeVia to \"api\" in engine/config.json and add ANTHROPIC_API_KEY to engine/.env)."
 if command -v node >/dev/null 2>&1; then
   major=$(node -p 'process.versions.node.split(".")[0]')
   [ "$major" -ge 22 ] || { echo "PROBLEM: Node $major is too old; version 22 or later is needed."; problems=1; }

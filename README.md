@@ -5,23 +5,24 @@
 <h1 align="center">Viral Hook Reels</h1>
 
 <p align="center">
-  <b>A Claude Code skill that turns any viral video link into a finished "why this went viral" reel.</b><br>
-  Script, voiceover, captions, edit, cover and post caption. One command, about five minutes.
+  <b>A skill for AI agents that turns any viral video link into a finished "why this went viral" reel.</b><br>
+  Script, voiceover, captions, edit, cover and post caption. One request, about five minutes.<br>
+  Works with Claude Code, Codex, Cursor, Gemini CLI and any agent that can run commands and look at images.
 </p>
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-d1fe17?labelColor=0b0c0a" alt="MIT licence"></a>
-  <img src="https://img.shields.io/badge/Claude%20Code-skill-d1fe17?labelColor=0b0c0a" alt="Claude Code skill">
+  <img src="https://img.shields.io/badge/agent%20skill-any%20agent-d1fe17?labelColor=0b0c0a" alt="Agent skill: works with any agent">
   <a href="https://postaxis.io/?utm_source=github&utm_medium=readme&utm_campaign=viral-hook-reels"><img src="https://img.shields.io/badge/made%20by-PostAxis-d1fe17?labelColor=0b0c0a" alt="Made by PostAxis"></a>
 </p>
 
 ```
-/hook-reel https://www.instagram.com/reel/XXXXXXXX/ follow
+Make a hook reel from https://www.instagram.com/reel/XXXXXXXX/ and end with follow
 ```
 
 You know the format: a viral video plays, freezes, and a fast voice says *"This video pulled 6.8 million views, and surprisingly, it was an ad."* Then three psychology triggers, a formula, and a call to action. Those reels get millions of views and take an editor an hour each.
 
-This skill makes one from a link. Claude watches the video, finds the second where the viewer "gets it", writes a script about that specific video, records the voice, cuts the edit and renders a 1080 x 1920 MP4.
+This skill makes one from a link. Your agent watches the video frame by frame, finds the second where the viewer "gets it" and writes a script about that specific video. The engine in this repo records the voice, cuts the edit and renders a 1080 x 1920 MP4.
 
 Made by the team behind [PostAxis](https://postaxis.io/?utm_source=github&utm_medium=readme&utm_campaign=viral-hook-reels), the social media scheduler built for AI agents.
 
@@ -45,50 +46,58 @@ Every reel also gets a cover picture and a caption to paste:
 
 ## Quick start
 
-**1. Install the tools** (macOS shown; Claude Code must already be installed and signed in)
+**1. Install the tools** (macOS shown)
 
 ```bash
 brew install node ffmpeg yt-dlp
 ```
 
-**2. Install the skill**
+**2. Install the skill** into your agent's skills folder
 
-```bash
-git clone https://github.com/dovudhusan/viral-hook-reels ~/.claude/skills/hook-reel
-```
+| Agent | Command |
+|---|---|
+| Claude Code | `git clone https://github.com/dovudhusan/viral-hook-reels ~/.claude/skills/hook-reel` |
+| Codex | `git clone https://github.com/dovudhusan/viral-hook-reels ~/.codex/skills/hook-reel` |
+| Cursor | `git clone https://github.com/dovudhusan/viral-hook-reels ~/.cursor/skills/hook-reel` |
+| Gemini CLI | `git clone https://github.com/dovudhusan/viral-hook-reels ~/.gemini/skills/hook-reel` |
+| Any other agent | `git clone https://github.com/dovudhusan/viral-hook-reels`, open that folder in your agent and say: *"Read SKILL.md and make a hook reel from this link: …"* |
 
-**3. Add your ElevenLabs key.** In Claude Code, run `/hook-reel` once. It installs the engine's packages (a few minutes, one time) and creates `~/.claude/skills/hook-reel/engine/.env`. Open that file and fill in `ELEVENLABS_API_KEY`. Type the key into the file yourself; don't paste it into the chat.
+The last row works everywhere, because the repo carries an `AGENTS.md` that points the agent at the skill. If your agent keeps skills somewhere else, clone into that folder instead.
+
+**3. Add your ElevenLabs key.** Ask your agent for a hook reel once. On the first run it installs the engine's packages (a few minutes, one time) and creates `engine/.env` inside the skill folder. Open that file and fill in `ELEVENLABS_API_KEY`. Type the key into the file yourself; don't paste it into the chat.
 
 **4. Make a reel**
 
 ```
-/hook-reel https://www.instagram.com/reel/XXXXXXXX/ follow
+Make a hook reel from https://www.instagram.com/reel/XXXXXXXX/ and end with follow
 ```
 
-Or just say it: *"make a hook reel from this link, end with save."* The MP4, its cover and the caption land in `~/Movies/Hook Reels`.
+In agents with slash commands, `/hook-reel <link> follow` does the same. The MP4, its cover and the caption land in `~/Movies/Hook Reels`.
 
 | You need | Why |
 |---|---|
-| [Claude Code](https://claude.com/claude-code) | Runs the skill and writes the script on your Claude plan (no API key needed) |
+| An AI agent that can run shell commands and look at images | It drives the engine and writes the script itself, on whatever model it runs on. No extra AI key |
 | Node 22+, ffmpeg, yt-dlp | Render, audio work, downloading the source |
 | An [ElevenLabs](https://elevenlabs.io) API key | The voiceover, with word timings for the captions. About 700 characters per reel |
 | Chrome, logged into Instagram | Only for Instagram links. TikTok and YouTube Shorts links need nothing |
 
-Built and tested on macOS. Linux should work; Windows is untested.
+Built and tested on macOS with Claude Code. The skill is a plain `SKILL.md` plus shell commands, so other agents follow the same steps; if yours trips somewhere, please open an issue. Linux should work; Windows is untested.
 
-## What Claude does with your link
+## What happens to your link
 
 ```mermaid
 flowchart LR
   A[Fetch<br>video + view count] --> B[Analyze<br>frames + speech]
-  B --> C[Script<br>one of 9 approaches]
+  B --> C[Script<br>your agent writes it]
   C --> D[Voice<br>pauses cut, 1.15x]
   D --> E[Plan<br>scene per phrase]
   E --> F[Render<br>1080x1920 MP4 + cover]
   F --> G[Deliver<br>folder + caption]
 ```
 
-Then Claude checks its own work the way an editor would: it looks at the frames around the cut, reads the script for lines that could be said about any video, and looks at a contact sheet of the finished reel before telling you it is ready. If something is off, it edits the script and re-runs only the stages that changed.
+The script is the one stage the engine hands to your agent. It gets a brief with the facts, the three approaches on offer and the rules, looks at one frame per second, and writes the script. The engine then checks it (the cut, the word count, the view count, the approach) and sends it back with a list of problems until it passes.
+
+After the render the agent checks the work the way an editor would: it looks at a contact sheet of the finished reel before telling you it is ready. If something is off, it edits the script and re-runs only the stages that changed.
 
 Every job is resumable. A failed render does not cost you a second voiceover.
 
@@ -98,7 +107,7 @@ Most of the work went into these. They are in [SKILL.md](SKILL.md) and enforced 
 
 1. **The cut waits for the payoff.** The script records the second a first-time viewer understands what the opening leads to (for an ad, the second the product is on screen). The source plays until two to four seconds after that. Cutting in early is the worst mistake: the voice says "it was an ad" and nobody has seen the ad.
 2. **The script is about this video.** What is on screen, at which second, and what the viewer's brain does. A line that could be read over any video fails the check.
-3. **No two reels in a row sound the same.** Nine script approaches, three offered per reel, never one that the last three reels used. The engine also shows Claude your last ten scripts so it stops repeating phrases.
+3. **No two reels in a row sound the same.** Nine script approaches, three offered per reel, never one that the last three reels used. The brief also lists your last ten scripts so the agent stops repeating phrases.
 4. **The voice is fast like a creator, not like a chipmunk.** Pauses are cut out, then the audio runs at 1.15x.
 5. **Captions are word-timed.** White, uppercase, either one word at a time or a phrase building up, driven by the real timings of the recorded voice.
 6. **The picture follows the words.** When the voice describes a moment, that exact moment replays. Names get text cards. "Number one" gets a number card.
@@ -140,7 +149,7 @@ The keyword and the offer are yours to set in `engine/config.json`.
 
 ## Two-clip comparisons
 
-*"This is the failed version. 13 million views. This is the good version. 2 million."* For reels that compare two clips, Claude writes a small spec file and runs the `compare` command: clip one plays and gets a label, clip two plays and gets a label, then the voice explains the difference over replays. Ask for it in words: *"compare these two videos"*. The spec format is in [reference.md](reference.md).
+*"This is the failed version. 13 million views. This is the good version. 2 million."* For reels that compare two clips, the agent writes a small spec file and runs the `compare` command: clip one plays and gets a label, clip two plays and gets a label, then the voice explains the difference over replays. Ask for it in words: *"compare these two videos"*. The spec format is in [reference.md](reference.md).
 
 ## Make it yours
 
@@ -153,14 +162,14 @@ The keyword and the offer are yours to set in `engine/config.json`.
 | Output folder | `outputDir` in `engine/config.json`. Point it at a synced Drive or iCloud folder to get reels on your phone |
 | Telegram ping when a reel is done | `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` in `engine/.env` |
 
-To update: `git -C ~/.claude/skills/hook-reel pull`. Your `.env` and your jobs are untouched.
+To update: `git pull` inside the skill folder. Your `.env` and your jobs are untouched.
 
 ## Made the reel? Now get it posted
 
 A reel sitting in a folder gets zero views. **[PostAxis](https://postaxis.io/?utm_source=github&utm_medium=readme&utm_campaign=viral-hook-reels)** is the scheduler we built for exactly this kind of workflow:
 
 - **Upload once, post everywhere.** The same file goes out as an Instagram Reel, a TikTok and a YouTube Short, plus X, LinkedIn, Facebook, Threads and Telegram.
-- **Built for AI agents.** PostAxis connects to Claude, Claude Code, ChatGPT, Cursor or any MCP agent. Ask in plain words and the agent plans the week and schedules the posts.
+- **Built for AI agents.** PostAxis connects to Claude, ChatGPT, Codex, Cursor or any MCP agent, very likely the same one you just made the reel with. Ask in plain words and it plans the week and schedules the posts.
 - **It checks each network's rules first**, so a post does not fail at publish time because of a length or format limit.
 - **A calendar you can review** before anything goes live, and a REST API if you would rather script it.
 
@@ -179,17 +188,19 @@ Make a week of breakdown reels on Sunday, schedule one a day, and stop thinking 
 
 | Problem | Fix |
 |---|---|
-| "Log into Instagram in Chrome" | Log in at instagram.com in Chrome, then tell Claude to resume the job |
+| "Log into Instagram in Chrome" | Log in at instagram.com in Chrome, then tell your agent to run the job again |
 | `voiceKey: false` after setup | `ELEVENLABS_API_KEY` is missing in `engine/.env` |
-| The cut is too early or too late | Tell Claude: "the cut should be at 0:27". It re-plans without recording the voice again |
+| The cut is too early or too late | Tell your agent: "the cut should be at 0:27". It re-plans without recording the voice again |
 | The voice is too fast | "Set the voice tempo to 1.05 and redo the voice" |
-| Render fails with "got no response" | The engine retries three times by itself. Ask Claude to resume once more |
-| The script is rejected twice | The video is probably too short or has no clear payoff. Try another one |
+| Render fails with "got no response" | The engine retries three times by itself. Ask your agent to resume once more |
+| The script keeps failing the check | The video is probably too short or has no clear payoff. Try another one |
+| Your agent cannot look at images | It cannot watch the video, so it should stop. Use an agent with vision, or the one-command mode in [reference.md](reference.md) |
 
 ## What is in the repo
 
 ```
-SKILL.md          What Claude follows: setup, make, check, fix, hand over
+SKILL.md          What the agent follows: set up, prepare, write, render, check, hand over
+AGENTS.md         Points any agent that opens this folder at SKILL.md
 reference.md      Approaches, script fields, scene types, the two-clip spec
 scripts/setup.sh  Finds the engine, installs packages, reports what is missing
 engine/           The program: TypeScript CLI + Remotion scenes (src/, remotion/, assets/)

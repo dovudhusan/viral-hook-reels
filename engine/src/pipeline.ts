@@ -34,8 +34,8 @@ const OUTPUTS: Record<StageName, string[]> = {
   voice: ['voice.mp3', 'words.json', 'voice.json'], plan: ['timeline.json'], render: ['out.mp4'], deliver: ['deliver.json'],
 };
 
-/** Runs the stages in order. With `from`, earlier stages are reused if their files exist. */
-export async function runPipeline(job: Job, opts: FetchOpts, config: Config, deps: Deps, from?: StageName): Promise<void> {
+/** Runs the stages in order. With `from`, earlier stages are reused if their files exist. With `until`, it stops after that stage. */
+export async function runPipeline(job: Job, opts: FetchOpts, config: Config, deps: Deps, from?: StageName, until?: StageName): Promise<void> {
   const run: Record<StageName, () => Promise<unknown>> = {
     fetch: () => fetchStage(job, opts, deps.exec),
     analyze: () => analyzeStage(job, deps.exec, deps.transcribe),
@@ -65,5 +65,6 @@ export async function runPipeline(job: Job, opts: FetchOpts, config: Config, dep
     const notice = stage === 'deliver' ? job.readJson<{ notice?: string }>('deliver.json').notice : undefined;
     job.setStatus(notice ? { stage, state: 'done', notice } : { stage, state: 'done' });
     deps.emit?.({ event: 'stage', stage, state: 'finished' });
+    if (stage === until) return;
   }
 }

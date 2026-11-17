@@ -23,14 +23,14 @@ export function buildPrompt(meta: Meta, analysis: Analysis, config: Config, prob
   const formats = offered.map(f => {
     const o = FORMATS[f];
     const [least, most] = o.beats;
-    return `- "${f}" (${least === most ? least : `${least} to ${most}`} beats${o.heading === 'number' ? '; the program says "Number one, <name>." before each' : '; beats are not announced'}): ${o.about}\n  Voiceover of the reference reel this comes from: ${o.example}`;
+    return `- "${f}" (${least === most ? least : `${least} to ${most}`} beats${o.heading === 'number' ? '; the program says "Number one, <name>." before each' : '; beats are not announced'}): ${o.about}\n  Example voiceover in this shape: ${o.example}`;
   }).join('\n');
 
-  const system = `You write voiceover scripts for short "hook breakdown" reels in the style of one reference channel. Each reel replays the opening of a viral video, then explains in plain words why that opening kept people watching.
+  const system = `You write voiceover scripts for short "hook breakdown" reels. Each reel replays the opening of a viral video, then explains in plain words why that opening kept people watching.
 
-You are given frames from the viral video (one per second, in order: the first frame is second 0, the next second 1, and so on), its scene-cut times, any speech in it, and its view count. Study what happens second by second before you write. Then call write_script.
+You are given frames from the viral video (one per second, in order: the first frame is second 0, the next second 1, and so on), its scene-cut times, any speech in it, and its view count. Study what happens second by second before you write. Then answer with the script.
 
-Fields of write_script:
+Fields of the script:
 1. format: the approach for this reel. Today's choices are below; pick the one that fits THIS video best and follow its shape closely, adapting every sentence to what this video shows. A format made for ads only fits a video that is an ad.
 ${formats}
 2. payoff: the second of the source at which a first-time viewer understands what the opening was leading to. If the video turns out to be an ad, that is the second the product or brand is clearly on screen or named, not the second the scene changes. Otherwise it is the reveal, the punchline or the result.
@@ -64,7 +64,7 @@ Rules:
     `Speech in the source: ${analysis.transcript ? JSON.stringify(analysis.transcript) : 'no speech'}`,
     ...(problems.length ? [
       '', 'Your previous answer was:', JSON.stringify(previous ?? null, null, 2),
-      '', 'It had these problems. Keep what was right, fix all of them and call write_script again:', ...problems.map(p => `- ${p}`),
+      '', 'It had these problems. Keep what was right, fix all of them and answer again:', ...problems.map(p => `- ${p}`),
     ] : []),
   ].join('\n');
 

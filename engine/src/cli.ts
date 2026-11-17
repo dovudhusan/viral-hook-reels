@@ -1,4 +1,4 @@
-import { copyFileSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir, userInfo } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -26,6 +26,7 @@ import { compareReel, readSpec } from './compare';
 import { coverPathFor } from './cover';
 import { ENDINGS, isEnding, postCaption } from './endings';
 import { renderCover, renderStage } from './stages/render';
+import { submitScript, writeBrief } from './stages/script';
 import type { FetchOpts } from './stages/fetch';
 import type { Script, StageName } from './types';
 
@@ -44,7 +45,7 @@ function settings() {
 }
 const browser = () => { loadDotenv({ path: join(root, '.env'), quiet: true }); return process.env.IG_COOKIES_BROWSER?.trim() || 'chrome'; };
 
-async function run(job: Job, saved: { url: string; file?: string; views?: number; flip?: boolean }, json: boolean, from?: StageName) {
+async function run(job: Job, saved: { url: string; file?: string; views?: number; flip?: boolean }, json: boolean, from?: StageName, until?: StageName) {
   const { config, env } = settings();
   const emit: Emit = json ? print : () => {};
   const say = json ? () => {} : (line: string) => console.log(line);
@@ -64,12 +65,20 @@ async function run(job: Job, saved: { url: string; file?: string; views?: number
   say(`Job ${job.id}`);
   emit({ event: 'job', jobId: job.id, url: saved.url });
   try {
-    await runPipeline(job, opts, config, deps, from);
+    await runPipeline(job, opts, config, deps, from, until);
   } catch {
     const s = job.status();
     console.error(`Failed at ${s?.stage}: ${s?.error}`);
     console.error(`Fix the cause, then run: npm run hook-reels -- resume ${job.id}`);
     process.exit(1);
+  }
+  if (until && until !== 'deliver') {
+    // Stopped on purpose: whoever is driving writes the script from the brief, hands it in, then resumes.
+    const brief = writeBrief(job, config);
+    say(`Brief: ${brief}`);
+    say(`Write the script, then run: script ${job.id} <file>, then: resume ${job.id}`);
+    emit({ event: 'brief', jobId: job.id, brief, frames: job.path('frames') });
+    process.exit(0);
   }
   const done = job.readJson<{ file: string; notice?: string }>('deliver.json');
   const script = job.readJson<Script>('script.json');
@@ -107,8 +116,47 @@ program.command('make <url>')
     await run(job, saved, Boolean(o.json)).catch(fail);
   });
 
+const makeOptions = (c: Command) => c
+  .option('--views <count>', 'view count, if the link does not report one (34000000 or 2.3m)', parseViews)
+  .option('--file <path>', 'use a video file already on this computer instead of downloading')
+  .option('--flip', 'mirror the source video left to right')
+  .option('--ending <name>', `how the reel ends: ${ENDINGS.join(', ')}`, 'hooks')
+  .option('--json', 'report progress as JSON lines');
+
+makeOptions(program.command('prepare <url>'))
+  .description('Download and analyse a video, then stop and write a brief so the agent driving the engine writes the script itself')
+  .action(async (url: string, o: { views?: number; file?: string; flip?: boolean; json?: boolean; ending: string }) => {
+    if (!isEnding(o.ending)) fail(new Error(`--ending must be one of: ${ENDINGS.join(', ')}`));
+    try { settings(); } catch (e) { fail(e); }
+    mkdirSync(jobsRoot, { recursive: true });
+    const job = createJob(jobsRoot, url);
+    const saved = { url, file: o.file, views: o.views, flip: o.flip, ending: o.ending };
+    job.writeJson('job.json', saved);
+    await run(job, saved, Boolean(o.json), undefined, 'analyze').catch(fail);
+  });
+
+program.command('brief <jobId>')
+  .description('Write the script brief for a prepared job again and print where it is')
+  .action(act((jobId: string) => { console.log(writeBrief(openJob(jobsRoot, jobId), loadConfig(root))); }));
+
+program.command('script <jobId> <file>')
+  .description('Hand in a script written from the brief: it is checked, and saved if it passes')
+  .action(act((jobId: string, file: string) => {
+    const job = openJob(jobsRoot, jobId);
+    let answer: unknown;
+    try { answer = JSON.parse(readFileSync(file, 'utf8')); } catch (e) { throw new Error(`${file} is not valid JSON: ${(e as Error).message}`); }
+    const problems = submitScript(job, loadConfig(root), answer);
+    if (problems.length) {
+      console.error(`The script has ${problems.length} problem${problems.length > 1 ? 's' : ''}. Fix all of them and hand it in again:`);
+      for (const p of problems) console.error(`- ${p}`);
+      process.exit(1);
+    }
+    job.setStatus({ stage: 'script', state: 'done' });
+    console.log(`Script accepted. Continue with: resume ${job.id}`);
+  }));
+
 program.command('resume <jobId>')
-  .description('Continue a failed job from the stage that failed')
+  .description('Continue a job: from the stage that failed, or from the stage after the last finished one')
   .option('--json', 'report progress as JSON lines')
   .action(async (jobId: string, o: { json?: boolean }) => {
     try {
@@ -122,7 +170,9 @@ program.command('resume <jobId>')
         }
         return;
       }
-      await run(job, job.readJson('job.json'), Boolean(o.json), status?.stage ?? STAGES[0]);
+      // A stage that finished is not run again: a prepared job whose script was handed in continues with the voice.
+      const from = status?.state === 'done' ? STAGES[STAGES.indexOf(status.stage) + 1] : status?.stage ?? STAGES[0];
+      await run(job, job.readJson('job.json'), Boolean(o.json), from);
     } catch (e) { fail(e); }
   });
 

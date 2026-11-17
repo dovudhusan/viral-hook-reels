@@ -2,7 +2,7 @@
 
 ## The nine approaches
 
-The engine offers three of these per reel, drawn at random and never one used by the last three reels. Claude (inside the engine) picks the one that fits the video and adapts it. They are the shapes the most viewed hook-breakdown reels take. The full wording of each is in `ENGINE/src/narration.ts` (`FORMATS`) and an example voiceover for each is in `ENGINE/src/examples.ts`.
+The engine offers three of these per reel, drawn at random and never one used by the last three reels; the brief lists the three. You pick the one that fits the video and adapt it. They are the shapes the most viewed hook-breakdown reels take. The full wording of each is in `ENGINE/src/narration.ts` (`FORMATS`) and an example voiceover for each is in `ENGINE/src/examples.ts`.
 
 | Name | When it fits | Opening line shape | Beats |
 |---|---|---|---|
@@ -114,18 +114,23 @@ node_modules/.bin/tsx src/cli.ts settings set voiceTempo 1.2
 
 | Command | What it does |
 |---|---|
+| `prepare <link> --ending <name>` | Download and analyse, then stop and write `brief.md` for you |
+| `brief <jobId>` | Write the brief again and print where it is |
+| `script <jobId> <file>` | Check a script you wrote; save it if it passes |
+| `resume <jobId>` | Continue a job: from the stage that failed, or after the last finished one |
+| `make <link> --ending <name>` | Everything in one command, with Claude writing the script inside the engine. Needs the `claude` command signed in (`claude: true` in CHECK), or `claudeVia: "api"` in config.json with `ANTHROPIC_API_KEY` in .env |
 | `history` | Every job, newest first, as JSON |
 | `cover <jobId>` | Draw the cover again and put it next to the reel |
 | `doctor` | What is installed and set, yes or no only |
-| `make … --file /path/video.mp4 --views 2.3m` | Use a video already on disk |
+| `prepare … --file /path/video.mp4 --views 2.3m` | Use a video already on disk |
 
 ## Troubleshooting
 
 | Problem | Cause and fix |
 |---|---|
 | "Log into Instagram in Chrome" | The Instagram session expired. The user logs in at instagram.com in Chrome, then resume |
-| Script invalid after retry | Read the reasons in the message. Usually the video is too short or has no clear payoff; try again, or pick another video |
+| The script keeps failing the check | Read each problem it lists. If the video is too short or has no clear payoff, tell the user and suggest another video |
 | Render fails with "got no response" | The engine already retries three times. Resume once more |
-| The cut is still too early | Edit `hook.end` in `script.json`, continue from `plan` |
-| Voice too fast or slow | `settings set voiceTempo`, then continue from `voice` |
+| The cut is still too early | Change `hook.end` in the draft, hand it in with `script`, then skip the voice and resume (SKILL.md, step 5) |
+| Voice too fast or slow | `settings set voiceTempo 1.05`, hand the draft in again with `script`, then `resume` |
 | A download host cannot be reached | A network block on this computer. Try again later or use `--file` |
