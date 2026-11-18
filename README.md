@@ -56,11 +56,11 @@ brew install node ffmpeg yt-dlp
 
 | Agent | Command |
 |---|---|
-| Claude Code | `git clone https://github.com/dovudhusan/viral-hook-reels ~/.claude/skills/hook-reel` |
-| Codex | `git clone https://github.com/dovudhusan/viral-hook-reels ~/.codex/skills/hook-reel` |
-| Cursor | `git clone https://github.com/dovudhusan/viral-hook-reels ~/.cursor/skills/hook-reel` |
-| Gemini CLI | `git clone https://github.com/dovudhusan/viral-hook-reels ~/.gemini/skills/hook-reel` |
-| Any other agent | `git clone https://github.com/dovudhusan/viral-hook-reels`, open that folder in your agent and say: *"Read SKILL.md and make a hook reel from this link: …"* |
+| Claude Code | `git clone https://github.com/dovudhusan/viral-hook-reels-skill ~/.claude/skills/hook-reel` |
+| Codex | `git clone https://github.com/dovudhusan/viral-hook-reels-skill ~/.codex/skills/hook-reel` |
+| Cursor | `git clone https://github.com/dovudhusan/viral-hook-reels-skill ~/.cursor/skills/hook-reel` |
+| Gemini CLI | `git clone https://github.com/dovudhusan/viral-hook-reels-skill ~/.gemini/skills/hook-reel` |
+| Any other agent | `git clone https://github.com/dovudhusan/viral-hook-reels-skill`, open that folder in your agent and say: *"Read SKILL.md and make a hook reel from this link: …"* |
 
 The last row works everywhere, because the repo carries an `AGENTS.md` that points the agent at the skill. If your agent keeps skills somewhere else, clone into that folder instead.
 
